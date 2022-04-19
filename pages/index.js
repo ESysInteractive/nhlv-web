@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles"
 import Global from "../styles/global"
 import CssBaseline from "@mui/material/CssBaseline"
 import Header from "../components/Header"
+import GamesContainer from "../components/Games"
 import Footer from "../components/Footer"
 
 export default () => {
@@ -19,6 +20,7 @@ export default () => {
             <Global />
             <CssBaseline />
             <Header />
+            <GamesContainer />
             <Footer />
         </ThemeProvider>
     );
