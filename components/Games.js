@@ -6,20 +6,14 @@ import Box from "@mui/material/Box"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 
+import StatusMap from "./StatusMap"
+
 const ContainerHolder = styledComponent.div`
     margin-top: 50px;
     margin-left: 20px;
 `;
 
-const Item = styled(Paper)(({ theme }) => ({
-    backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
-    ...theme.typography.body2,
-    padding: theme.spacing(1),
-    textAlign: "center",
-    color: theme.palette.text.secondary,
-    position: "relative",
-    zIndex: 1,
-    width: "50%",
+/*
     "&:before": {
         display: "flex",
         flexDirection: "column",
@@ -29,14 +23,41 @@ const Item = styled(Paper)(({ theme }) => ({
         top: 0,
         left: 0,
         width: "100%",
-        height: "25%",
+        height: "20%",
         content: "'Scheduled'",
         backgroundColor: "#222",
         borderRadius: "4px",
         justifyContent: "center",
         textAlign: "center"
-    } 
+    }
+*/
+
+const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: "center",
+    color: theme.palette.text.secondary,
+    position: "relative",
+    zIndex: 1,
+    width: "100%"
 }));
+
+const Status = styledComponent.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20%;
+    background-color: ${props => props.bgColor};
+    border-radius: 4px;
+    justify-content: center;
+    text-align: center;
+`;
 
 const Content = styledComponent.div`
     margin-top: 30px;
@@ -59,19 +80,89 @@ const ContentRight = styledComponent.div`
 `;
 
 const Score = styledComponent.span`
+    position: absolute;
     font-weight: bolder;
+    left: 95%;
+    margin-top: 5px;
 `;
 
 const Spacer = styledComponent.div`
-    background: #ccc;
+    background: #fff;
+    opacity: .1;
+    height: 1px;
+    width: 100%;
+    line-height: 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
 `;
+
+const Body = styledComponent.span`
+    display: block;
+    margin-left: 22%;
+`;
+
+/* 
+    <Grid item md={4}>
+        <Item>
+            <Content>
+                <ContentRight>
+                    <div>1st</div>
+                    <div>20:00</div>
+                </ContentRight>
+                <ContentLeft>
+                    <div>
+                        <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/25.svg" />
+                        <span>Dallas Stars <Score>0</Score></span>
+                    </div>
+                    <div>
+                        <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/22.svg" />
+                        <span>Edmonton Oilers <Score>0</Score></span>
+                    </div>
+                    <Spacer />
+                    <Body>Streams available at game time</Body>
+                </ContentLeft>
+            </Content>
+        </Item>
+    </Grid>
+*/
 
 export default () => {
     const [mounted, setMounted] = React.useState(false);
+    const [data, setData] = React.useState(null);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
+
+    React.useEffect(() => {
+        if (mounted) {
+            fetch("https://statsapi.web.nhl.com/api/v1/schedule?teamId=&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg")
+                .then(res => res.json())
+                .then(ret => {
+                    setData(ret);
+                    setLoading(false);
+                });
+        }
+    }, [mounted]);
+
+    React.useEffect(() => {
+        if (mounted) {
+            const int = setInterval(() => {
+                setData(null);
+                fetch("https://statsapi.web.nhl.com/api/v1/schedule?teamId=&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg")
+                    .then(res => res.json())
+                    .then(ret => {
+                        setData(ret);
+                        setLoading(false);
+                    });
+            }, 30000);
+
+            return () => clearInterval(int);
+        }
+    }, [mounted]);
+    
+    if (!data) return <h1>Loading...</h1>;
 
     return (
         <React.Fragment key={String(mounted)}>
@@ -79,25 +170,35 @@ export default () => {
                 <Container>
                     <Box sx={{ flexGrow: 1 }}>
                         <Grid container spacing={2}>
-                            <Grid item xs={8}>
-                                <Item>
-                                    <Content>
-                                        <ContentRight>
-                                            
-                                        </ContentRight>
-                                        <ContentLeft>
-                                            <div>
-                                                <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/25.svg" />
-                                                <span>Dallas Stars <Score>0</Score></span>
-                                            </div>
-                                            <div>
-                                                <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/22.svg" />
-                                                <span>Edmonton Oilers <Score>0</Score></span>
-                                            </div>
-                                        </ContentLeft>
-                                    </Content>
-                                </Item>
-                            </Grid>
+                            {data.dates[0].games.map(game => (
+                                <Grid item md={4}>
+                                    <Item>
+                                        <Status bgColor={StatusMap[game.status.statusCode].color}>
+                                            <span style={{ color: "#fff" }}>{StatusMap[game.status.statusCode].detailedState}</span>
+                                        </Status>
+                                        <Content>
+                                            {StatusMap[game.status.statusCode].live &&
+                                                <ContentRight>
+                                                    <div>{game.linescore.currentPeriodOrdinal}</div>
+                                                    <div>{game.linescore.currentPeriodTimeRemaining}</div>
+                                                </ContentRight>
+                                            }
+                                            <ContentLeft>
+                                                <div>
+                                                    <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.away.team.id}.svg`} />
+                                                    <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) <Score>{game.teams.away.score}</Score></span>
+                                                </div>
+                                                <div>
+                                                    <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg`} />
+                                                    <span>{game.teams.home.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) <Score>{game.teams.home.score}</Score></span>
+                                                </div>
+                                            </ContentLeft>
+                                            <Spacer />
+                                            <span>Streams available at game time</span>
+                                        </Content>
+                                    </Item>
+                                </Grid>
+                            ))}
                         </Grid>
                     </Box>
                 </Container>
