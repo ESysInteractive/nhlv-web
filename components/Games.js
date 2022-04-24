@@ -6,7 +6,14 @@ import Box from "@mui/material/Box"
 import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 
+import TextField from "@mui/material/TextField"
+
+import { DatePicker } from "@mui/x-date-pickers/DatePicker"
+
+import moment from "moment-timezone"
 import StatusMap from "./StatusMap"
+import getNetwork from "./getNetwork"
+import NetworkTypeMap from "./NetworkTypeMap"
 
 const ContainerHolder = styledComponent.div`
     margin-top: 50px;
@@ -101,6 +108,27 @@ const Body = styledComponent.span`
     margin-left: 22%;
 `;
 
+const NetworkHolder = styledComponent.div`
+    display: flex;
+    column-gap: 5px;
+`;
+
+const NetworkContainer = styledComponent.div`
+    position: relative;
+`;
+
+const Network = styledComponent.img`
+    height: 30px;
+`;
+
+const NetworkType = styledComponent.img`
+    position: absolute;
+    height: 30px;
+    top: -10px;
+    left: 35px;
+    opacity: .25;
+`;
+
 /* 
     <Grid item md={4}>
         <Item>
@@ -125,11 +153,16 @@ const Body = styledComponent.span`
         </Item>
     </Grid>
 */
-
+/* 
+    margin-left: 10px;
+    {NetworkTypeMap[item.mediaFeedType] && <NetworkType src={NetworkTypeMap[item.mediaFeedType]} />}
+*/
 export default () => {
     const [mounted, setMounted] = React.useState(false);
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
+
+    const [date, setDate] = React.useState(null);
 
     React.useEffect(() => {
         setMounted(true);
@@ -146,7 +179,7 @@ export default () => {
         }
     }, [mounted]);
 
-    React.useEffect(() => {
+    /* React.useEffect(() => {
         if (mounted) {
             const int = setInterval(() => {
                 setData(null);
@@ -160,7 +193,7 @@ export default () => {
 
             return () => clearInterval(int);
         }
-    }, [mounted]);
+    }, [mounted]); */
     
     if (!data) return <h1>Loading...</h1>;
 
@@ -174,7 +207,9 @@ export default () => {
                                 <Grid item md={4}>
                                     <Item>
                                         <Status bgColor={StatusMap[game.status.statusCode].color}>
-                                            <span style={{ color: "#fff" }}>{StatusMap[game.status.statusCode].detailedState}</span>
+                                            <span style={{ color: "#fff" }}>
+                                                {StatusMap[game.status.statusCode].detailedState} {game.status.statusCode === "1" && `(${moment(game.gameDate).tz("America/Edmonton").format("h:mm A")})`}
+                                            </span>
                                         </Status>
                                         <Content>
                                             {StatusMap[game.status.statusCode].live &&
@@ -190,11 +225,21 @@ export default () => {
                                                 </div>
                                                 <div>
                                                     <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg`} />
-                                                    <span>{game.teams.home.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) <Score>{game.teams.home.score}</Score></span>
+                                                    <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}-{game.teams.home.leagueRecord.ot}) <Score>{game.teams.home.score}</Score></span>
                                                 </div>
                                             </ContentLeft>
                                             <Spacer />
-                                            <span>Streams available at game time</span>
+                                            <NetworkHolder>
+                                                {game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.map((item, key) => {
+                                                    if (item.mediaState === "MEDIA_ON" || item.mediaState === "MEDIA_ARCHIVE") {
+                                                        return <a>
+                                                            <NetworkContainer>
+                                                                <Network src={getNetwork(item.callLetters)} title={`${item.mediaFeedType} - ${item.callLetters}`} />
+                                                            </NetworkContainer>
+                                                        </a>
+                                                    }
+                                                })}
+                                            </NetworkHolder>
                                         </Content>
                                     </Item>
                                 </Grid>

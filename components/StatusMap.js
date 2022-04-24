@@ -8,18 +8,18 @@ export default {
     "2": {
         gameState: "Preview",
         detailedState: "Pre-Game",
-        color: "#222",
+        color: "#444",
         live: false
     },
     "3": {
         gameState: "Live",
         detailedState: "In Progress",
-        color: "#f5e642",
+        color: "rgb(215, 200, 38)",
         live: true
     },
     "4": {
-        gameState: "Live",
-        detailedState: "In Progress (Critical)",
+        gameState: "LiveCritical",
+        detailedState: "In Progress",
         color: "#e03131",
         live: true
     },
