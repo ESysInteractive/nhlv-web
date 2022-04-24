@@ -7,7 +7,8 @@ import Grid from "@mui/material/Grid"
 import Paper from "@mui/material/Paper"
 
 import TextField from "@mui/material/TextField"
-
+import { AdapterMoment } from "@mui/x-date-pickers/AdapterMoment"
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 
 import moment from "moment-timezone"
@@ -162,22 +163,24 @@ export default () => {
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
 
-    const [date, setDate] = React.useState(null);
+    let defaultDate = moment();
+
+    if (typeof window === undefined) defaultDate = moment(localStorage.getItem("savedDate"));
+
+    const [date, setDate] = React.useState(defaultDate);
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
     React.useEffect(() => {
-        if (mounted) {
-            fetch("https://statsapi.web.nhl.com/api/v1/schedule?teamId=&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg")
-                .then(res => res.json())
-                .then(ret => {
-                    setData(ret);
-                    setLoading(false);
-                });
-        }
-    }, [mounted]);
+        fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&endDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg`)
+            .then(res => res.json())
+            .then(ret => {
+                setData(ret);
+                setLoading(false);
+            });
+    }, [date]);
 
     /* React.useEffect(() => {
         if (mounted) {
@@ -202,6 +205,17 @@ export default () => {
             <ContainerHolder>
                 <Container>
                     <Box sx={{ flexGrow: 1 }}>
+                        <LocalizationProvider dateAdapter={AdapterMoment}>
+                            <DatePicker
+                                label="Date"
+                                value={date}
+                                onChange={newDate => {
+                                    setDate(newDate);
+                                    localStorage.setItem("savedDate", moment(newDate))
+                                }}
+                                renderInput={params => <TextField {...params} />}
+                            />
+                        </LocalizationProvider>
                         <Grid container spacing={2}>
                             {data.dates[0].games.map(game => (
                                 <Grid item md={4}>
