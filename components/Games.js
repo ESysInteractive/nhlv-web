@@ -119,7 +119,7 @@ const NetworkContainer = styledComponent.div`
 `;
 
 const Network = styledComponent.img`
-    height: 30px;
+    height: ${props => props.logoHeight};
 `;
 
 const NetworkType = styledComponent.img`
@@ -235,24 +235,22 @@ export default () => {
                                             <ContentLeft>
                                                 <div>
                                                     <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.away.team.id}.svg`} />
-                                                    <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) <Score>{game.teams.away.score}</Score></span>
+                                                    <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && <Score>{game.teams.away.score}</Score>}</span>
                                                 </div>
                                                 <div>
                                                     <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg`} />
-                                                    <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}-{game.teams.home.leagueRecord.ot}) <Score>{game.teams.home.score}</Score></span>
+                                                    <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}-{game.teams.home.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && <Score>{game.teams.home.score}</Score>}</span>
                                                 </div>
                                             </ContentLeft>
                                             <Spacer />
                                             <NetworkHolder>
-                                                {game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.map((item, key) => {
-                                                    if (item.mediaState === "MEDIA_ON" || item.mediaState === "MEDIA_ARCHIVE") {
-                                                        return <a>
-                                                            <NetworkContainer>
-                                                                <Network src={getNetwork(item.callLetters)} title={`${item.mediaFeedType} - ${item.callLetters}`} />
-                                                            </NetworkContainer>
-                                                        </a>
-                                                    }
-                                                })}
+                                                {game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").length > 0 ? game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").map((item, key) => {
+                                                    return <a>
+                                                        <NetworkContainer>
+                                                            <Network src={getNetwork(item.callLetters).src} title={`${item.mediaFeedType} - ${item.callLetters}`} logoHeight={getNetwork(item.callLetters).height} />
+                                                        </NetworkContainer>
+                                                    </a>
+                                                }) : <span>Streams available at game time</span>}
                                             </NetworkHolder>
                                         </Content>
                                     </Item>

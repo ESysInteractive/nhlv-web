@@ -1,27 +1,104 @@
 const Networks = {
-    ABC: require("../images/networks/abc.png"),
-    ATT: require("../images/networks/att.png"),
-    BSAZ: require("../images/networks/bsaz.png"),
-    BSDET: require("../images/networks/bsdet.png"),
-    BSFL: require("../images/networks/bsfl.png"),
-    BSMW: require("../images/networks/bsmw.png"),
-    BSN: require("../images/networks/bsn.png"),
-    BSOH: require("../images/networks/bsoh.png"),
-    BSSO: require("../images/networks/bsso.png"),
-    BSSUN: require("../images/networks/bssun.png"),
-    BSSW: require("../images/networks/bssw.png"),
-    BSW: require("../images/networks/bsw.png"),
-    ESPN: require("../images/networks/espn.png"),
-    MSG: require("../images/networks/msg.png"),
-    NBC: require("../images/networks/nbc.png"),
-    ROOT: require("../images/networks/root.png"),
-    TSN1: require("../images/networks/tsn1.png"),
-    TSN2: require("../images/networks/tsn2.png"),
-    TSN3: require("../images/networks/tsn3.png"),
-    TSN4: require("../images/networks/tsn4.png"),
-    TSN5: require("../images/networks/tsn5.png"),
-    SN: require("../images/networks/sn.png"),
-    DEFAULT: require("../images/networks/default.png")
+    ABC: {
+        logo: require("../images/networks/abc.png"),
+        height: "30px"
+    },
+    ATT: {
+        logo: require("../images/networks/att.png"),
+        height: "30px"
+    },
+    BSAZ: {
+        logo: require("../images/networks/bsaz.png"),
+        height: "30px"
+    },
+    BSDET: {
+        logo: require("../images/networks/bsdet.png"),
+        height: "30px"
+    },
+    BSFL: {
+        logo: require("../images/networks/bsfl.png"),
+        height: "25px"
+    },
+    BSMW: {
+        logo: require("../images/networks/bsmw.png"),
+        height: "30px"
+    },
+    BSN: {
+        logo: require("../images/networks/bsn.png"),
+        height: "30px"
+    },
+    BSOH: {
+        logo: require("../images/networks/bsoh.png"),
+        height: "30px"
+    },
+    BSSO: {
+        logo: require("../images/networks/bsso.png"),
+        height: "30px"
+    },
+    BSSUN: {
+        logo: require("../images/networks/bssun.png"),
+        height: "30px"
+    },
+    BSSW: {
+        logo: require("../images/networks/bssw.png"),
+        height: "30px"
+    },
+    BSW: {
+        logo: require("../images/networks/bsw.png"),
+        height: "30px"
+    },
+    CBC: {
+        logo: require("../images/networks/sn.png"),
+        height: "25px"
+    },
+    ESPN: {
+        logo: require("../images/networks/espn.png"),
+        height: "30px"
+    },
+    MSG: {
+        logo: require("../images/networks/msg.png"),
+        height: "20px"
+    },
+    NBC: {
+        logo: require("../images/networks/nbc.png"),
+        height: "25px"
+    },
+    NESN: {
+        logo: require("../images/networks/default.png"),
+        height: "30px"
+    },
+    ROOT: {
+        logo: require("../images/networks/root.png"),
+        height: "30px"
+    },
+    TSN1: {
+        logo: require("../images/networks/tsn1.png"),
+        height: "5px"
+    },
+    TSN2: {
+        logo: require("../images/networks/tsn2.png"),
+        height: "5px"
+    },
+    TSN3: {
+        logo: require("../images/networks/tsn3.png"),
+        height: "5px"
+    },
+    TSN4: {
+        logo: require("../images/networks/tsn4.png"),
+        height: "5px"
+    },
+    TSN5: {
+        logo: require("../images/networks/tsn5.png"),
+        height: "5px"
+    },
+    SN: {
+        logo: require("../images/networks/sn.png"),
+        height: "25px"
+    },
+    DEFAULT: {
+        logo: require("../images/networks/default.png"),
+        height: "30px"
+    }
 };
 
 export default (network) => {
@@ -34,5 +111,8 @@ export default (network) => {
         }
     }
 
-    return Networks[networkFound].default.src;
+    return {
+        src: Networks[networkFound].logo.default.src,
+        height: Networks[networkFound].height
+    };
 }
