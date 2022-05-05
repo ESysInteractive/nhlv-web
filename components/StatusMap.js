@@ -40,5 +40,11 @@ export default {
         detailedState: "Final",
         color: "#000",
         live: false
+    },
+    "8": {
+        gameState: "Preview",
+        detailedState: "Scheduled (Time TBD)",
+        color: "#222",
+        live: false
     }
 }

@@ -19,6 +19,7 @@ export default () => {
         <ThemeProvider theme={theme}>
             <Global />
             <CssBaseline />
+            <Header />
             <GamesContainer />
             <Footer />
         </ThemeProvider>

@@ -87,11 +87,19 @@ const ContentRight = styledComponent.div`
     justify-content: space-between;
 `;
 
-const Score = styledComponent.span`
+const ScoreLight = styledComponent.span`
     position: absolute;
     font-weight: bolder;
     left: 95%;
     margin-top: 5px;
+`;
+
+const ScoreDark = styledComponent.span`
+    position: absolute;
+    font-weight: bolder;
+    left: 95%;
+    margin-top: 5px;
+    opacity: .5;
 `;
 
 const Spacer = styledComponent.div`
@@ -128,6 +136,16 @@ const NetworkType = styledComponent.img`
     top: -10px;
     left: 35px;
     opacity: .25;
+`;
+
+const SeriesHolder = styledComponent.div`
+    text-align: center;
+    margin-bottom: 5px;
+`;
+
+const SeriesSummary = styledComponent.span`
+    color: #fff;
+    font-weight: bold;
 `;
 
 /* 
@@ -174,7 +192,7 @@ export default () => {
     }, []);
 
     React.useEffect(() => {
-        fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&endDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg`)
+        fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&endDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
             .then(res => res.json())
             .then(ret => {
                 setData(ret);
@@ -222,7 +240,7 @@ export default () => {
                                     <Item>
                                         <Status bgColor={StatusMap[game.status.statusCode].color}>
                                             <span style={{ color: "#fff" }}>
-                                                {StatusMap[game.status.statusCode].detailedState} {game.status.statusCode === "1" && `(${moment(game.gameDate).tz("America/Edmonton").format("h:mm A")})`}
+                                                {StatusMap[game.status.statusCode].detailedState} {game.status.statusCode === "1" && `(${moment(game.gameDate).tz("America/Edmonton").format("h:mm A [MT]")})`}
                                             </span>
                                         </Status>
                                         <Content>
@@ -232,14 +250,19 @@ export default () => {
                                                     <div>{game.linescore.currentPeriodTimeRemaining}</div>
                                                 </ContentRight>
                                             }
+                                            {game.seriesSummary &&
+                                                <SeriesHolder>
+                                                    <SeriesSummary>{game.seriesSummary.gameLabel.toUpperCase()} ({game.seriesSummary.seriesStatusShort.toUpperCase()})</SeriesSummary>
+                                                </SeriesHolder>
+                                            }
                                             <ContentLeft>
                                                 <div>
                                                     <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.away.team.id}.svg`} />
-                                                    <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}-{game.teams.away.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && <Score>{game.teams.away.score}</Score>}</span>
+                                                    <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}{game.teams.away.leagueRecord.ot !== undefined && `-` + game.teams.away.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && (game.teams.away.score >= game.teams.home.score ? <ScoreLight>{game.teams.away.score}</ScoreLight> : <ScoreDark>{game.teams.away.score}</ScoreDark>)}</span>
                                                 </div>
                                                 <div>
                                                     <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg`} />
-                                                    <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}-{game.teams.home.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && <Score>{game.teams.home.score}</Score>}</span>
+                                                    <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}{game.teams.home.leagueRecord.ot !== undefined && `-` + game.teams.home.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && (game.teams.home.score >= game.teams.away.score ? <ScoreLight>{game.teams.home.score}</ScoreLight> : <ScoreDark>{game.teams.home.score}</ScoreDark>)}</span>
                                                 </div>
                                             </ContentLeft>
                                             <Spacer />

@@ -31,6 +31,10 @@ const Networks = {
         logo: require("../images/networks/bsoh.png"),
         height: "30px"
     },
+    BSSC: {
+        logo: require("../images/networks/bssc.png"),
+        height: "30px"
+    },
     BSSO: {
         logo: require("../images/networks/bsso.png"),
         height: "30px"
