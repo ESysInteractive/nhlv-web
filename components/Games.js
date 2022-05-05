@@ -14,31 +14,11 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 import moment from "moment-timezone"
 import StatusMap from "./StatusMap"
 import getNetwork from "./getNetwork"
-import NetworkTypeMap from "./NetworkTypeMap"
 
 const ContainerHolder = styledComponent.div`
     margin-top: 50px;
     margin-left: 20px;
 `;
-
-/*
-    "&:before": {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        position: "absolute",
-        zIndex: -1,
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "20%",
-        content: "'Scheduled'",
-        backgroundColor: "#222",
-        borderRadius: "4px",
-        justifyContent: "center",
-        textAlign: "center"
-    }
-*/
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -148,34 +128,6 @@ const SeriesSummary = styledComponent.span`
     font-weight: bold;
 `;
 
-/* 
-    <Grid item md={4}>
-        <Item>
-            <Content>
-                <ContentRight>
-                    <div>1st</div>
-                    <div>20:00</div>
-                </ContentRight>
-                <ContentLeft>
-                    <div>
-                        <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/25.svg" />
-                        <span>Dallas Stars <Score>0</Score></span>
-                    </div>
-                    <div>
-                        <img style={{ height: "20px" }} src="https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/22.svg" />
-                        <span>Edmonton Oilers <Score>0</Score></span>
-                    </div>
-                    <Spacer />
-                    <Body>Streams available at game time</Body>
-                </ContentLeft>
-            </Content>
-        </Item>
-    </Grid>
-*/
-/* 
-    margin-left: 10px;
-    {NetworkTypeMap[item.mediaFeedType] && <NetworkType src={NetworkTypeMap[item.mediaFeedType]} />}
-*/
 export default () => {
     const [mounted, setMounted] = React.useState(false);
     const [data, setData] = React.useState(null);
@@ -186,35 +138,30 @@ export default () => {
     if (typeof window === undefined) defaultDate = moment(localStorage.getItem("savedDate"));
 
     const [date, setDate] = React.useState(defaultDate);
+    const [formatDate, setFormatDate] = React.useState("");
 
+    // Checks if mounted (loaded)
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
+    // Stores the formatted date from the date object
     React.useEffect(() => {
-        fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&endDate=${date.tz("America/Edmonton").format("YYYY-MM-DD")}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
-            .then(res => res.json())
-            .then(ret => {
-                setData(ret);
-                setLoading(false);
-            });
+        setFormatDate(date.tz("America/Edmonton").format("YYYY-MM-DD"));
     }, [date]);
 
-    /* React.useEffect(() => {
-        if (mounted) {
-            const int = setInterval(() => {
-                setData(null);
-                fetch("https://statsapi.web.nhl.com/api/v1/schedule?teamId=&expand=schedule.teams,schedule.linescore,schedule.game.content.media.epg")
-                    .then(res => res.json())
-                    .then(ret => {
-                        setData(ret);
-                        setLoading(false);
-                    });
-            }, 30000);
-
-            return () => clearInterval(int);
+    // Fetches game data with formatted date
+    React.useEffect(() => {
+        if (formatDate != "")
+        {
+            fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${formatDate}&endDate=${formatDate}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
+                .then(res => res.json())
+                .then(ret => {
+                    setData(ret);
+                    setLoading(false);
+                });
         }
-    }, [mounted]); */
+    }, [formatDate]);
     
     if (!data) return <h1>Loading...</h1>;
 
