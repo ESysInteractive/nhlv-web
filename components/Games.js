@@ -182,7 +182,7 @@ export default () => {
                             />
                         </LocalizationProvider>
                         <Grid container spacing={2}>
-                            {data.dates[0].games.map(game => (
+                            {data.dates[0].games && data.dates[0].games.map(game => (
                                 <Grid item md={4}>
                                     <Item>
                                         <Status bgColor={StatusMap[game.status.statusCode].color}>
