@@ -214,13 +214,15 @@ export default () => {
                                             </ContentLeft>
                                             <Spacer />
                                             <NetworkHolder>
-                                                {game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").length > 0 ? game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").map((item, key) => {
-                                                    return <a>
-                                                        <NetworkContainer>
-                                                            <Network src={getNetwork(item.callLetters).src} title={`${item.mediaFeedType} - ${item.callLetters}`} logoHeight={getNetwork(item.callLetters).height} />
-                                                        </NetworkContainer>
-                                                    </a>
-                                                }) : <span>Streams available at game time</span>}
+                                                {game.content && (
+                                                    (game.content.media && game.content.media.epg) && game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").length > 0 ? game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").map((item, key) => {
+                                                        return <a>
+                                                            <NetworkContainer>
+                                                                <Network src={getNetwork(item.callLetters).src} title={`${item.mediaFeedType} - ${item.callLetters}`} logoHeight={getNetwork(item.callLetters).height} />
+                                                            </NetworkContainer>
+                                                        </a>
+                                                    }) : <span>Streams available at game time</span>
+                                                )}
                                             </NetworkHolder>
                                         </Content>
                                     </Item>
