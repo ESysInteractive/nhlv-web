@@ -46,5 +46,47 @@ export default {
         detailedState: "Scheduled (Time TBD)",
         color: "#222",
         live: false
+    },
+    "S": {
+        gameState: "Preview",
+        detailedState: "Scheduled",
+        color: "#222",
+        live: false
+    },
+    "P": {
+        gameState: "Preview",
+        detailedState: "Pre-Game",
+        color: "#444",
+        live: false
+    },
+    "PW": {
+        gameState: "Preview",
+        detailedState: "Warmup",
+        color: "#666",
+        live: false
+    },
+    "I": {
+        gameState: "Live",
+        detailedState: "In Progress",
+        color: "rgb(215, 200, 38)",
+        live: true
+    },
+    "O": {
+        gameState: "Final",
+        detailedState: "Final",
+        color: "#000",
+        live: false
+    },
+    "F": {
+        gameState: "Final",
+        detailedState: "Final",
+        color: "#000",
+        live: false
+    },
+    "MF": {
+        gameState: "Manager challenge",
+        detailedState: "Challenge",
+        color: "rgb(0, 0, 255)",
+        live: true
     }
 }

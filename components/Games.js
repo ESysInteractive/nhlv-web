@@ -128,10 +128,11 @@ const SeriesSummary = styledComponent.span`
     font-weight: bold;
 `;
 
-export default () => {
+export default ({ type }) => {
     const [mounted, setMounted] = React.useState(false);
     const [data, setData] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
+    const [isMlb, setIsMlb] = React.useState(false);
 
     let defaultDate = moment();
 
@@ -145,6 +146,10 @@ export default () => {
         setMounted(true);
     }, []);
 
+    React.useEffect(() => {
+        if (type === "mlb") setIsMlb(true);
+    }, [type]);
+
     // Stores the formatted date from the date object
     React.useEffect(() => {
         setFormatDate(date.tz("America/Edmonton").format("YYYY-MM-DD"));
@@ -154,14 +159,16 @@ export default () => {
     React.useEffect(() => {
         if (formatDate != "")
         {
-            fetch(`https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${formatDate}&endDate=${formatDate}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
+            fetch(isMlb
+                    ? `https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${formatDate}&endDate=${formatDate}&hydrate=game(content(media(epg(all))))`
+                    : `https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${formatDate}&endDate=${formatDate}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
                 .then(res => res.json())
                 .then(ret => {
                     setData(ret);
                     setLoading(false);
                 });
         }
-    }, [formatDate]);
+    }, [isMlb, formatDate]);
     
     if (!data) return <h1>Loading...</h1>;
 
@@ -192,10 +199,15 @@ export default () => {
                                         </Status>
                                         <Content>
                                             {StatusMap[game.status.statusCode].live &&
-                                                <ContentRight>
-                                                    <div>{game.linescore.currentPeriodOrdinal}</div>
-                                                    <div>{game.linescore.currentPeriodTimeRemaining}</div>
-                                                </ContentRight>
+                                                <>
+                                                    {isMlb && <ContentRight>
+
+                                                    </ContentRight>}
+                                                    {!isMlb && <ContentRight>
+                                                        <div>{game.linescore.currentPeriodOrdinal}</div>
+                                                        <div>{game.linescore.currentPeriodTimeRemaining}</div>
+                                                    </ContentRight>}
+                                                </>
                                             }
                                             {game.seriesSummary &&
                                                 <SeriesHolder>
@@ -204,18 +216,24 @@ export default () => {
                                             }
                                             <ContentLeft>
                                                 <div>
-                                                    <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.away.team.id}.svg`} />
+                                                    <img style={{ height: "20px" }} src={isMlb
+                                                        ? `https://www.mlbstatic.com/team-logos/team-cap-on-light/${game.teams.away.team.id}.svg`
+                                                        : `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.away.team.id}.svg
+                                                    `} />
                                                     <span>{game.teams.away.team.name} ({game.teams.away.leagueRecord.wins}-{game.teams.away.leagueRecord.losses}{game.teams.away.leagueRecord.ot !== undefined && `-` + game.teams.away.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && (game.teams.away.score >= game.teams.home.score ? <ScoreLight>{game.teams.away.score}</ScoreLight> : <ScoreDark>{game.teams.away.score}</ScoreDark>)}</span>
                                                 </div>
                                                 <div>
-                                                    <img style={{ height: "20px" }} src={`https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg`} />
+                                                    <img style={{ height: "20px" }} src={isMlb
+                                                        ? `https://www.mlbstatic.com/team-logos/team-cap-on-light/${game.teams.home.team.id}.svg`
+                                                        : `https://www-league.nhlstatic.com/images/logos/teams-current-primary-light/${game.teams.home.team.id}.svg
+                                                    `} />
                                                     <span>{game.teams.home.team.name} ({game.teams.home.leagueRecord.wins}-{game.teams.home.leagueRecord.losses}{game.teams.home.leagueRecord.ot !== undefined && `-` + game.teams.home.leagueRecord.ot}) {(game.status.statusCode !== "1" && game.status.statusCode !== "2") && (game.teams.home.score >= game.teams.away.score ? <ScoreLight>{game.teams.home.score}</ScoreLight> : <ScoreDark>{game.teams.home.score}</ScoreDark>)}</span>
                                                 </div>
                                             </ContentLeft>
                                             <Spacer />
                                             <NetworkHolder>
                                                 {game.content && (
-                                                    (game.content.media && game.content.media.epg) && game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").length > 0 ? game.content.media.epg.filter(med => med.title === "NHLTV")[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").map((item, key) => {
+                                                    (game.content.media && game.content.media.epg) && game.content.media.epg.filter(med => med.title === `${isMlb ? "MLBTV" : "NHLTV"}`)[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").length > 0 ? game.content.media.epg.filter(med => med.title === `${isMlb ? "MLBTV" : "NHLTV"}`)[0].items.filter(feed => feed.mediaState === "MEDIA_ON" || feed.mediaState === "MEDIA_ARCHIVE").map((item, key) => {
                                                         return <a>
                                                             <NetworkContainer>
                                                                 <Network src={getNetwork(item.callLetters).src} title={`${item.mediaFeedType} - ${item.callLetters}`} logoHeight={getNetwork(item.callLetters).height} />

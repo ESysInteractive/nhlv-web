@@ -59,6 +59,14 @@ const Networks = {
         logo: require("../images/networks/espn.png"),
         height: "30px"
     },
+    MASN: {
+        logo: require("../images/networks/masn.png"),
+        height: "20px"
+    },
+    MSN2: {
+        logo: require("../images/networks/masn.png"),
+        height: "20px"
+    },
     MSG: {
         logo: require("../images/networks/msg.png"),
         height: "20px"
@@ -72,6 +80,10 @@ const Networks = {
         height: "30px"
     },
     ROOT: {
+        logo: require("../images/networks/root.png"),
+        height: "30px"
+    },
+    RSNW: {
         logo: require("../images/networks/root.png"),
         height: "30px"
     },
@@ -94,6 +106,14 @@ const Networks = {
     TSN5: {
         logo: require("../images/networks/tsn5.png"),
         height: "5px"
+    },
+    SNLA: {
+        logo: require("../images/networks/snla.png"),
+        height: "25px"
+    },
+    SNY: {
+        logo: require("../images/networks/sny.svg"),
+        height: "25px"
     },
     SN: {
         logo: require("../images/networks/sn.png"),
