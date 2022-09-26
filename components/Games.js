@@ -67,6 +67,10 @@ const ContentRight = styledComponent.div`
     justify-content: space-between;
 `;
 
+const Inning = styledComponent.span`
+    font-weight: bolder;
+`;
+
 const ScoreLight = styledComponent.span`
     position: absolute;
     font-weight: bolder;
@@ -128,6 +132,21 @@ const SeriesSummary = styledComponent.span`
     font-weight: bold;
 `;
 
+const fetchGame = async (formatDate, isMlb = false) => {
+    return new Promise((resolve, reject) => {
+        if (formatDate != "")
+        {
+            fetch(isMlb
+                ? `https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${formatDate}&endDate=${formatDate}&hydrate=game(content(media(epg(all)))),linescore`
+                : `https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${formatDate}&endDate=${formatDate}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
+            .then(res => res.json())
+            .then(ret => {
+                resolve(ret);
+            });
+        }
+    });
+};
+
 export default ({ type }) => {
     const [mounted, setMounted] = React.useState(false);
     const [data, setData] = React.useState(null);
@@ -157,17 +176,25 @@ export default ({ type }) => {
 
     // Fetches game data with formatted date
     React.useEffect(() => {
-        if (formatDate != "")
-        {
-            fetch(isMlb
-                    ? `https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${formatDate}&endDate=${formatDate}&hydrate=game(content(media(epg(all))))`
-                    : `https://statsapi.web.nhl.com/api/v1/schedule?teamId=&startDate=${formatDate}&endDate=${formatDate}&expand=schedule.broadcasts.all,schedule.teams,schedule.linescore,schedule.game.seriesSummary,schedule.game.content.media.epg`)
-                .then(res => res.json())
+        fetchGame(formatDate, isMlb)
+            .then(ret => {
+                setData(ret);
+                setLoading(false);
+            });
+        
+        let interval = setInterval(() => {
+            setLoading(true);
+            fetchGame(formatDate, isMlb)
                 .then(ret => {
                     setData(ret);
                     setLoading(false);
                 });
-        }
+        }, 60000);
+
+        return () => {
+            clearInterval(interval);
+            interval = 0;
+        };
     }, [isMlb, formatDate]);
     
     if (!data) return <h1>Loading...</h1>;
@@ -194,14 +221,15 @@ export default ({ type }) => {
                                     <Item>
                                         <Status bgColor={StatusMap[game.status.statusCode].color}>
                                             <span style={{ color: "#fff" }}>
-                                                {StatusMap[game.status.statusCode].detailedState} {game.status.statusCode === "1" && `(${moment(game.gameDate).tz("America/Edmonton").format("h:mm A [MT]")})`}
+                                                {StatusMap[game.status.statusCode].detailedState} {(game.status.statusCode === "1" || game.status.statusCode === "S") && `(${moment(game.gameDate).tz("America/Edmonton").format("h:mm A [MT]")})`}
                                             </span>
                                         </Status>
                                         <Content>
                                             {StatusMap[game.status.statusCode].live &&
                                                 <>
                                                     {isMlb && <ContentRight>
-
+                                                        <Inning>{game.linescore.inningHalf} {game.linescore.currentInningOrdinal}</Inning>
+                                                        <span>{game.linescore.balls}-{game.linescore.strikes}</span>
                                                     </ContentRight>}
                                                     {!isMlb && <ContentRight>
                                                         <div>{game.linescore.currentPeriodOrdinal}</div>
